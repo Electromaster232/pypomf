@@ -71,7 +71,7 @@ def upload_file(key):
 
 @app.route('/keygen')
 def keygen():
-    key = secrets.token_urlsafe(32)
+    key = secrets.token_hex(32)
     return key + '''<p>Send this key to ''' + Configvalues.OWNER + ''' to activate your account.'''
 
 
