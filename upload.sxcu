@@ -1,0 +1,6 @@
+{
+  "DestinationType": "ImageUploader, TextUploader, FileUploader",
+  "RequestURL": "http://127.0.0.1/upload",
+  "FileFormName": "file",
+  "ResponseType": "RedirectionURL",
+}
