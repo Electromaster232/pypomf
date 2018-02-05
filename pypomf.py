@@ -79,7 +79,7 @@ def keygen():
 def addaccount(ownerkey, keytoadd):
     if ownerkey == Configvalues.OWNERKEY:
         try:
-            query_db("INSERT INTO key (allowed_keys) VALUES (" + keytoadd + ");")
+            query_db("INSERT INTO key (allowed_keys) VALUES (\"" + keytoadd + "\");")
             db = getattr(g, '_database', None)
             db.commit()
             return '''<p>Done.</p>'''
