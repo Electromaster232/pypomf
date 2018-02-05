@@ -77,7 +77,7 @@ def keygen():
 
 @app.route('/addaccount/<string:ownerkey>/<string:keytoadd>')
 def addaccount(ownerkey, keytoadd):
-    if ownerkey == "TcVqpVrjg4ECE2VvQ2shejoZuD3L6fVICKmOOwaojnk":
+    if ownerkey == Configvalues.OWNERKEY:
         try:
             query_db("INSERT INTO key (allowed_keys) VALUES (" + keytoadd + ");")
             db = getattr(g, '_database', None)
