@@ -69,8 +69,12 @@ def upload_file(key):
                 query_db("INSERT INTO uploads (token, datetime, filename, fileext) VALUES (?, ?, ?, ?);", values)
                 db = getattr(g, '_database', None)
                 db.commit()
-                if "/panel/" in request.referrer:
-                    return redirect(request.referrer)
+                if not request.referrer:
+                    referrer = "/upload"
+                else:
+                    referrer = request.referrer
+                if "/panel/" in referrer:
+                    return redirect(referrer)
                 else:
                     return redirect(url_for('uploaded_file',
                                         filename=filename))
