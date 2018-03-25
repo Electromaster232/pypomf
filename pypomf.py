@@ -4,6 +4,7 @@ import sqlite3
 import secrets
 from config import Config as Configvalues
 import random
+import time
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = Configvalues.UPLOAD_FOLDER
@@ -62,8 +63,16 @@ def upload_file(key):
                 extension = file.filename.split(".",1)[1]
                 randnum = random.getrandbits(20)
                 filename = str(randnum) + "." + extension
+                sqlname = filename.split(".",1)[0]
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                return redirect(url_for('uploaded_file',
+                values = (key, str(time.time()), sqlname, extension)
+                query_db("INSERT INTO uploads (token, datetime, filename, fileext) VALUES (?, ?, ?, ?);", values)
+                db = getattr(g, '_database', None)
+                db.commit()
+                if "/panel/" in request.referrer:
+                    return redirect(request.referrer)
+                else:
+                    return redirect(url_for('uploaded_file',
                                         filename=filename))
     else:
         return render_template('upload.html')
@@ -94,5 +103,50 @@ def uploadnokey():
     return'''You need to supply your key to do this! Simply add it to the end of /upload/ for it to work!'''
 
 
+@app.route('/panel/<string:token>')
+def userpanel(token):
+    keylist = query_db("select * from key where allowed_keys = ?", (token,))
+    if not keylist:
+        return '''<h2>Invalid Token</h2>'''
+    else:
+        filetotal = len(query_db("SELECT * from uploads"))
+        files = query_db("SELECT * from uploads WHERE token = ? ORDER BY id desc", (token,))
+        filelist = len(files)
+        file1 = None
+        file2 = None
+        file3 = None
+        file4 = None
+        file5 = None
+        try:
+            file1 = str(files[0][3]) + "." + str(files[0][4])
+            file2 = str(files[1][3]) + "." + str(files[1][4])
+            file3 = str(files[2][3]) + "." + str(files[2][4])
+            file4 = str(files[3][3]) + "." + str(files[3][4])
+            file5 = str(files[4][3]) + "." + str(files[3][4])
+        except IndexError:
+            pass
+        return render_template("panel.html", filenum=filelist, url="/../upload/" + token, file1=file1,
+                               file2=file2, file3=file3, file4=file4,
+                               file5=file5, totalfiles=filetotal)
+
+
+@app.route('/panel', methods=['GET', 'POST'])
+def panel():
+    if request.method == "GET":
+        return render_template("login.html")
+    if request.method == "POST":
+        url = "/panel/" + request.form['token']
+        return redirect(url)
+
+
+# Hack to fix users clicking on non-existant img links
+@app.route('/None')
+def none():
+    if request.referrer == None:
+        return redirect("/../")
+    else:
+        return redirect(request.referrer)
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" src="static\styles\style.css">
+<meta charset="utf-8">
+<style>
+        .btn {
+            background-color: blue !important;
+            color:white !important;
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+        }
+
+        body {
+            background-color:CornflowerBlue  !important;
+            color:white !important;
+            background-image:url("https://dj-electro.me/504723.png") !important;
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+        }
+
+        a {
+         color: #FFFFFF;
+        }
+
+        h1 {
+            font-size: 80px !important;
+        }
+
+        </style>
+<title>PyPomf Panel</title>
+</head>
+
+<body>
+	<center>
+	<h1>PyPomf User Panel</h1>
+	<p>Upload New File</p>
+	<form method="post" action="{{ url }}" enctype="multipart/form-data">
+    <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+	<p>There have been {{ totalfiles }} uploaded files in total</p>
+	<p>You have uploaded {{ filenum }} files!</p>
+	<p>File List: (top 5)</p>
+		<p><a href="/../{{ file1 }}">{{ file1 }}</a><br /><a href="/../{{ file2 }}">{{ file2 }}</a><br /><a href="/../{{ file3 }}">{{ file3 }}</a><br />
+		<a href="/../{{ file4 }}">{{ file4 }}</a><br /><a href="/../{{ file5 }}">{{ file5 }}</a></p> </center>
+	
+</body>
+</html>
