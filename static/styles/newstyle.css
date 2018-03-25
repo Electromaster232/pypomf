@@ -1,0 +1,23 @@
+@charset "utf-8";
+/* CSS Document */
+.btn {
+            background-color: blue !important;
+            color:white !important;
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+        }
+
+        body {
+            background-color:CornflowerBlue  !important;
+            color:white !important;
+            background-image:url("https://dj-electro.me/504723.png") !important;
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+        }
+
+        a {
+         color: #FFFFFF;
+        }
+
+        h1 {
+            font-size: 80px !important;
+        }
+

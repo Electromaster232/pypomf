@@ -5,6 +5,8 @@ import secrets
 from config import Config as Configvalues
 import random
 import time
+import sendgrid
+from sendgrid.helpers.mail import *
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = Configvalues.UPLOAD_FOLDER
@@ -56,7 +58,7 @@ def upload_file(key):
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            keylist = query_db("select * from key where allowed_keys = ?", (key,))
+            keylist = query_db("select * from key where allowed_keys = ? and ENABLED = \"YES\"", (key,))
             if not keylist:
                 return '''<h2>ERROR: </h2> <p>Your token is not authorized to use this service.</p>'''
             else:
@@ -69,8 +71,12 @@ def upload_file(key):
                 query_db("INSERT INTO uploads (token, datetime, filename, fileext) VALUES (?, ?, ?, ?);", values)
                 db = getattr(g, '_database', None)
                 db.commit()
-                if "/panel/" in request.referrer:
-                    return redirect(request.referrer)
+                if not request.referrer:
+                    referrer = "/upload"
+                else:
+                    referrer = request.referrer
+                if "/panel/" in referrer:
+                    return redirect(referrer)
                 else:
                     return redirect(url_for('uploaded_file',
                                         filename=filename))
@@ -78,24 +84,37 @@ def upload_file(key):
         return render_template('upload.html')
 
 
-@app.route('/keygen')
-def keygen():
-    key = secrets.token_hex(32)
-    return key + '''<p>Send this key to ''' + Configvalues.OWNER + ''' to activate your account.'''
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == "GET":
+        return render_template("signup.html")
+    if request.method == "POST":
+        token = secrets.token_hex(20)
+        verifkey = secrets.token_hex(10)
+        values = (token, request.form['email'], verifkey, "NO")
+        query_db("INSERT INTO key (allowed_keys, email, authtoken, ENABLED) VALUES (?, ?, ?, ?);", values)
+        db = getattr(g, '_database', None)
+        db.commit()
+        sg = sendgrid.SendGridAPIClient(apikey=Configvalues.SENDGRID)
+        from_email = Email(Configvalues.FROMEMAIL)
+        to_email = Email(request.form['email'])
+        subject = "PyPomf Email Verification"
+        content = Content("text/plain", "Hello from PyPomf! \n \nHere is your verification link!\n" + Configvalues.SITEURL + "/signup/verify/" + verifkey)
+        mail = Mail(from_email=from_email, subject=subject, to_email=to_email, content=content)
+        sg.client.mail.send.post(request_body=mail.get())
+        return '''<h2>Email sent sucessfully. Check your email for the verification code</h2>'''
 
 
-@app.route('/addaccount/<string:ownerkey>/<string:keytoadd>')
-def addaccount(ownerkey, keytoadd):
-    if ownerkey == Configvalues.OWNERKEY:
-        try:
-            query_db("INSERT INTO key (allowed_keys) VALUES (\"" + keytoadd + "\");")
-            db = getattr(g, '_database', None)
-            db.commit()
-            return '''<p>Done.</p>'''
-        except sqlite3.IntegrityError:
-            return '''This Key Already exists.'''
+@app.route('/signup/verify/<string:veriftoken>')
+def verify(veriftoken):
+    validtoken = query_db("SELECT * FROM key WHERE authtoken = ?", (veriftoken,))
+    if not validtoken:
+        return '''<h2>verification key unknown</h2>'''
     else:
-        return '''<p>LOL You are not the owner nice try!</p>'''
+        query_db("UPDATE key SET ENABLED = \"YES\" WHERE authtoken = ?;", (veriftoken,))
+        db = getattr(g, '_database', None)
+        db.commit()
+        return render_template("signupcomplete.html", token=str(validtoken[0][0]))
 
 
 @app.route('/upload')
@@ -105,7 +124,7 @@ def uploadnokey():
 
 @app.route('/panel/<string:token>')
 def userpanel(token):
-    keylist = query_db("select * from key where allowed_keys = ?", (token,))
+    keylist = query_db("select * from key where allowed_keys = ? and ENABLED = \"YES\"", (token,))
     if not keylist:
         return '''<h2>Invalid Token</h2>'''
     else:
