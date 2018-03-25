@@ -1,6 +1,8 @@
-<!DOCTYPE html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" src="static\styles\style.css">
+<meta charset="utf-8">
 <style>
         .btn {
             background-color: blue !important;
@@ -24,7 +26,17 @@
         }
 
         </style>
-    <form method=post enctype=multipart/form-data>
-    <p><input type=file name=file>
-        <input type=submit value=Upload>
+<title>PyPomf Panel</title>
+</head>
+
+<body>
+	<center>
+	<h1>PyPomf Panel Login</h1>
+	<p></p>
+		 <form method=post enctype=multipart/form-data>
+    <p>Token: <input type=string name=token>
+        <input type=submit value=Login>
     </form>
+	</center>
+</body>
+</html>
