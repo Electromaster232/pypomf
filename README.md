@@ -1,6 +1,6 @@
 # Welcome to PyPomf
 
-PyPomf is a new way to create a Pomf-Compattable site powered by Flask
+PyPomf is a new way to create a Pomf-Compatible site powered by Flask
 
 #### Thats neato! How do I install?
 
